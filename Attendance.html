@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Employee Attendance</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+
+    <!-- Header -->
+    <nav class="bg-teal-600 text-white p-4 fixed top-0 w-full z-50 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold flex items-center">
+                <i class="bi bi-building mr-2"></i> WorkForce360
+            </h1>
+            <div class="flex items-center gap-4">
+                <div class="relative group">
+                    <i class="bi bi-person-circle text-2xl cursor-pointer"></i>
+                    <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg hidden group-hover:block">
+                        <div class="p-2 border-b">
+                            <p id="hrName" class="font-semibold text-gray-500"></p>
+                            <p id="hrId" class="text-sm text-gray-500"></p>
+                        </div>
+                        <a href="#" id="logoutBtn" class="block px-4 py-2 hover:bg-gray-100 text-red-600">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto flex flex-col md:flex-row gap-6 p-4 mt-16">
+        <!-- Sidebar -->
+        <aside class="sidebar bg-white rounded-lg shadow-lg w-full md:w-64 p-4">
+            <nav class="space-y-2">
+                <a href="Admin.html" class="block p-2 rounded hover:bg-teal-50 text-teal-600"><i class="bi bi-calendar-check mr-2"></i> Dashboard</a>
+                <a href="EmpAdmin.html" class="block p-2 rounded hover:bg-teal-50 text-teal-600"><i class="bi bi-people mr-2"></i> Leave Request</a>
+                <a href="Attendance.html" class="block p-2 rounded bg-teal-600 text-white"><i class="bi bi-calendar-check mr-2"></i> Attendance</a>
+                <a href="analytic.html" class="block p-2 rounded hover:bg-teal-50 text-teal-600"><i class="bi bi-bar-chart mr-2"></i>Analytic</a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 space-y-6 main-content">
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <h2 class="text-xl font-bold mb-4"><i class="bi bi-calendar-check text-teal-600"></i> Employee Attendance</h2>
+                
+                <!-- Attendance Table -->
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white border">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Emp ID</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Department</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attendanceTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", async function () {
+            try {
+                // Fetch HR details from session
+                const hrResponse = await fetch("/getLoggedInHR");
+                const hrData = await hrResponse.json();
+                
+                if (!hrData.success || !hrData.hr.hrId) {
+                    alert("Unauthorized access! Redirecting to login...");
+                    window.location.href = "Hrlogin.html";
+                    return;
+                }
+    
+                const hr = hrData.hr;
+                document.getElementById("hrName").innerText = hr.name;
+                document.getElementById("hrId").innerText = `HR ID: ${hr.hrId}`;
+    
+                // ✅ Fetch attendance only after hrId is retrieved
+                await fetchAttendanceData(hr.hrId);
+            } catch (error) {
+                console.error("Error retrieving HR session data:", error);
+            }
+        });
+    
+        let attendanceData = [];
+    
+        async function fetchAttendanceData(hrId) {
+            try {
+                const response = await fetch(`/api/attendance/${hrId}`); 
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+    
+                const data = await response.json();
+    
+                if (!Array.isArray(data)) {
+                    console.error("Invalid data format received:", data);
+                    return;
+                }
+    
+                attendanceData = data; // ✅ Store fetched data for filtering
+                renderTable(attendanceData);
+            } catch (error) {
+                console.error("Error fetching attendance data:", error);
+            }
+        }
+    
+        function renderTable(data) {
+            const tableBody = document.getElementById("attendanceTable");
+            tableBody.innerHTML = "";
+            data.forEach(employee => {
+                const row = `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4">${employee.employeeID}</td>
+                        <td class="px-6 py-4">${employee.name}</td>
+                        <td class="px-6 py-4">${employee.department}</td>
+                        <td class="px-6 py-4">${employee.date}</td>
+                        <td class="px-6 py-4">
+                            <select class="p-1 border rounded" id="status-${employee.employeeId}">
+                                <option value="Present" ${employee.status === "Present" ? "selected" : ""}>Present</option>
+                                <option value="Absent" ${employee.status === "Absent" ? "selected" : ""}>Absent</option>
+                                <option value="On Leave" ${employee.status === "On Leave" ? "selected" : ""}>Late</option>
+                            </select>
+                        </td>
+                        <td class="px-6 py-4">
+                            <button class="px-4 py-1 bg-teal-500 text-white rounded hover:bg-teal-600" onclick="updateAttendance(${employee.employeeId})">Save</button>
+                        </td>
+                    </tr>`;
+                tableBody.innerHTML += row;
+            });
+        }
+    
+        window.updateAttendance = async function (employeeId) {
+    const status = document.getElementById(`status-${employeeId}`).value;
+    try {
+        const response = await fetch("/api/attendance/update", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ employeeId, status })
+        });
+        alert("Employee attendance saved successfully");
+        if (response.ok) {
+            alert("Employee attendance saved successfully");  
+        } else {
+            alert("Failed to save employee attendance");
+        }
+    } catch (error) {
+        console.error("Error updating attendance:", error);
+    }
+};
+    </script>
+    
+
+</body>
+</html>

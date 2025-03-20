@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee - WorkForce360</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+
+    <!-- Navbar -->
+    <nav class="bg-teal-600 text-white p-4 fixed top-0 w-full z-50 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold flex items-center">
+                <i class="bi bi-building mr-2"></i>
+                WorkForce360 
+            </h1>
+            <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                    const user = JSON.parse(localStorage.getItem("LoggedInEmp"));
+            
+                    if (user) {
+                        document.getElementById("name").textContent = user.name;
+                        document.getElementById("employeeId").textContent = `Employee ID: ${user.employeeId}`;
+                    }
+                });
+            </script>
+            
+            <div class="flex items-center gap-4">
+                <span id="currentTime" class="font-mono text-sm"></span>
+                <div class="relative group">
+                    <i class="bi bi-person-circle text-2xl cursor-pointer"></i>
+                    <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg hidden group-hover:block">
+                        <div class="p-2 border-b">
+                            <p id="employeeName" class="font-semibold text-gray-500"></p>
+                            <p id="employeeId" class="text-sm text-gray-500"></p>
+                        </div>
+                        <a href="#" class="block px-4 py-2 text-blue-500 hover:bg-gray-100">Profile</a>
+                        <a href="#" id="logoutBtn" class="block px-4 py-2 hover:bg-gray-100 text-red-600">Logout</a>
+                    </div>
+                </div>
+            </div>
+            
+            <script>
+                // Logout function
+                document.getElementById("logoutBtn").addEventListener("click", function () {
+                    localStorage.removeItem("loggedInUser");
+                    window.location.replace("loginPage.html");
+                });
+            </script>
+    </nav>
+
+    <div class="container mx-auto flex flex-col md:flex-row gap-6 p-4 mt-16">
+        <!-- Sidebar -->
+        <aside class="sidebar bg-white rounded-lg shadow-lg w-full md:w-64 p-4">
+            <nav class="space-y-2">
+                <a href="Employee.html" class="block p-2 rounded bg-teal-600 text-white"><i class="bi bi-calendar-check mr-2"></i> Dashboard</a>
+                <a href="EmpLeaveRequest.html" class="block p-2 rounded hover:bg-teal-50 text-teal-600"><i class="bi bi-people mr-2"></i> Leave Request</a>
+                <a href="Empattendance.html" class="block p-2 rounded hover:bg-teal-50 text-teal-600"><i class="bi bi-calendar-check mr-2"></i> Attendance</a>
+                <a href="Empanalytic.html" class="block p-2 rounded hover:bg-teal-50 text-teal-600"><i class="bi bi-bar-chart mr-2"></i> Analytics</a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 space-y-6 main-content">
+            <!-- Quick Actions -->
+            <div class="bg-white p-4 rounded-lg shadow-lg">
+                <div class="flex flex-wrap gap-2">
+                    <button class="px-4 py-2 bg-teal-100 text-teal-700 rounded-lg hover:bg-teal-200">
+                        <i class="bi bi-plus-circle mr-2"></i>Request Leave
+                    </button>
+                </div>
+            </div>
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Attendance Rate -->
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-gray-500 flex items-center gap-2">
+                        <i class="bi bi-clock-history text-teal-600"></i>
+                        Attendance Rate
+                    </h3>
+                    <p id="attendanceRate" class="text-2xl font-bold text-teal-600">Loading...</p>
+                    <div class="mt-2 h-2 bg-gray-200 rounded-full">
+                        <div id="attendanceProgress" class="h-2 bg-teal-600 rounded-full" style="width: 0%"></div>
+                    </div>
+                </div>
+            
+                <!-- Leave Balance -->
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-gray-500 flex items-center gap-2">
+                        <i class="bi bi-calendar2-week text-teal-600"></i>
+                        Leave Balance
+                    </h3>
+                    <p id="leaveBalance" class="text-2xl font-bold text-teal-600">Loading...</p>
+                    <p id="totalLeaves" class="text-sm text-gray-500"></p>
+                </div>
+            
+                <!-- Performance Score -->
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-gray-500 flex items-center gap-2">
+                        <i class="bi bi-star-fill text-teal-600"></i>
+                        Performance Score
+                    </h3>
+                    <p id="performanceScore" class="text-2xl font-bold text-teal-600">Loading...</p>
+                    <div id="performanceStars" class="flex text-yellow-400 text-lg"></div>
+                </div>
+            </div>
+            
+
+           <!-- Employee Information -->
+<div class="bg-white p-6 rounded-lg shadow-lg">
+    <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+        <i class="bi bi-person-badge text-teal-600"></i>
+        Employee Information
+    </h2>
+    <div class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <p class="font-semibold text-gray-700">Full Name:</p>
+                <p id="empName" class="text-gray-500">Loading...</p>
+            </div>
+            <div>
+                <p class="font-semibold text-gray-700">Employee ID:</p>
+                <p id="empId" class="text-gray-500">Loading...</p>
+            </div>
+            <div>
+                <p class="font-semibold text-gray-700">Email:</p>
+                <p id="empEmail" class="text-gray-500">Loading...</p>
+            </div>
+            <div>
+                <p class="font-semibold text-gray-700">Role:</p>
+                <p id="empRole" class="text-gray-500">Loading...</p>
+            </div>
+            <div>
+                <p class="font-semibold text-gray-700">Department:</p>
+                <p id="empDepartment" class="text-gray-500">Loading...</p>
+            </div>
+            <div>
+                <p class="font-semibold text-gray-700"></p>
+                <p id="empDepartment" class="text-gray-500"></p>
+            </div>
+            <div>
+                <p class="font-semibold text-gray-700">Assigned HR:</p>
+                <p id="empHr" class="text-gray-500">Loading...</p>
+            </div>
+            <div>
+                <p class="font-semibold text-gray-700">Assigned HR ID:</p>
+                <p id="empHrId" class="text-gray-500">Loading...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", async function () {
+        try {
+            // ✅ Fetch logged-in employee details
+            const empResponse = await fetch("/getLoggedInEmp1");
+            const empData = await empResponse.json();
+    
+            if (!empData.success || !empData.employee) {
+                alert("Unauthorized access! Redirecting to login...");
+                window.location.href = "login.html";
+                return;
+            }
+    
+            const employee = empData.employee;
+    
+            // ✅ Populate Employee Information
+            document.getElementById("empName").textContent = employee.name;
+            document.getElementById("empId").textContent = employee.employeeID;
+            document.getElementById("empEmail").textContent = employee.email || "Not Available";
+            document.getElementById("empRole").textContent = employee.role || "Not Assigned";
+            document.getElementById("empDepartment").textContent = employee.department || "Not Assigned";
+            document.getElementById("empHr").textContent = employee.hrName || "Not Assigned";
+            document.getElementById("empHrId").textContent = employee.hrId || "Not Assigned";
+        } catch (error) {
+            console.error("Error fetching employee details:", error);
+        }
+    });
+    </script>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", async function () {
+            try {
+                // ✅ Fetch Logged-in Employee Data
+                const empResponse = await fetch("/getLoggedInEmp");
+                const empData = await empResponse.json();
+
+                if (!empData.success || !empData.employee) {
+                    alert("Unauthorized access! Redirecting to login...");
+                    window.location.href = "loginPage.html";
+                    return;
+                }
+
+                const employee = empData.employee;
+                document.getElementById("employeeName").textContent = employee.name;
+                document.getElementById("employeeId").textContent = `Employee ID: ${employee.employeeId}`;
+
+                // ✅ Fetch Attendance Rate
+                const attendanceResponse = await fetch(`/attendance/${employee.employeeId}`);
+                const attendanceData = await attendanceResponse.json();
+
+                if (attendanceData.length > 0) {
+                    const presentDays = attendanceData.filter(day => day.status === "Present").length;
+                    const attendanceRate = (presentDays / attendanceData.length) * 100;
+                    document.getElementById("attendanceRate").textContent = `${attendanceRate.toFixed(2)}%`;
+                    document.getElementById("attendanceProgress").style.width = `${attendanceRate.toFixed(2)}%`;
+                }
+
+                // ✅ Fetch Leave Balance
+                const leaveResponse = await fetch(`/leaveBalance/${employee.employeeId}`);
+                const leaveData = await leaveResponse.json();
+                if (leaveData.success) {
+                    document.getElementById("leaveBalance").textContent = `${leaveData.remainingLeaves} days`;
+                    document.getElementById("totalLeaves").textContent = `Out of ${leaveData.totalLeaves} annual leaves`;
+                }
+
+                // ✅ Fetch Performance Score
+                const performanceResponse = await fetch(`/get-evaluations/${employee.employeeId}`);
+                const performanceData = await performanceResponse.json();
+
+                if (performanceData.success && performanceData.evaluations.length > 0) {
+                    const avgScore = parseFloat(performanceData.evaluations[0].average_score);
+                    document.getElementById("performanceScore").textContent = `${avgScore}/10`;
+                    document.getElementById("performanceGrade").textContent = getGrade(avgScore);
+
+                    // Generate star rating
+                    let stars = "";
+                    for (let i = 0; i < 10; i++) {
+                        stars += i < avgScore ? '<i class="bi bi-star-fill text-yellow-400"></i>' : '<i class="bi bi-star text-gray-300"></i>';
+                    }
+                    document.getElementById("performanceStars").innerHTML = stars;
+                } else {
+                    document.getElementById("performanceScore").textContent = "No Evaluations Yet";
+                    document.getElementById("performanceGrade").textContent = "Not Graded";
+                }
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        });
+
+        // ✅ Function to Determine Grade
+        function getGrade(score) {
+            if (score < 4) return "Bad";
+            if (score >= 5 && score <= 7) return "Average";
+            return "Superb";
+        }
+    </script>
+</body>
+</html>

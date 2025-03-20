@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Performance Analytics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+
+</head>
+<body class="bg-gray-100">
+
+    <!-- Navbar -->
+    <nav class="bg-teal-600 text-white p-4 fixed top-0 w-full z-50 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold flex items-center">
+                <i class="bi bi-building mr-2"></i>
+                WorkForce360 
+            </h1>
+            
+            <div class="flex items-center gap-4">
+                <span id="currentTime" class="font-mono text-sm"></span>
+                <div class="relative group">
+                    <i class="bi bi-person-circle text-2xl cursor-pointer"></i>
+                    <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg hidden group-hover:block">
+                        <div class="p-2 border-b">
+                            <p id="employeeName" class="font-semibold text-gray-500"></p>
+                            <p id="employeeId" class="text-sm text-gray-500"></p>
+                        </div>
+                        <a href="#" class="block px-4 py-2 text-blue-500 hover:bg-gray-100">Profile</a>
+                        <a href="#" id="logoutBtn" class="block px-4 py-2 hover:bg-gray-100 text-red-600">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar and Content Wrapper -->
+    <div class="container mx-auto flex flex-col md:flex-row gap-6 p-4 mt-16">
+        <!-- Sidebar -->
+        <aside class="sidebar bg-white rounded-lg shadow-lg w-full md:w-64 p-4 h-screen">
+            <nav class="space-y-2">
+                <a href="Employee.html" class="block p-2 rounded hover:bg-teal-50 text-teal-600"><i class="bi bi-calendar-check mr-2"></i> Dashboard</a>
+                <a href="EmpLeaveRequest.html" class="block p-2 rounded hover:bg-teal-50 text-teal-600"><i class="bi bi-people mr-2"></i> Leave Request</a>
+                <a href="Empattendance.html" class="block p-2 rounded hover:bg-teal-50 text-teal-600"><i class="bi bi-calendar-check mr-2"></i> Attendance</a>
+                <a href="Empanalytic.html" class="block p-2 rounded bg-teal-600 text-white"><i class="bi bi-bar-chart mr-2"></i> Analytics</a>
+            </nav>
+        </aside>
+
+    <div class="container mx-auto p-6 mt-16">
+        <div class="bg-white p-6 rounded-lg shadow-lg">
+            <h2 class="text-xl font-bold mb-4 text-teal-600">Your Performance Evaluation</h2>
+            
+            <form id="evaluationForm" class="space-y-4">
+                <label class="block font-semibold">Employee Name:</label>
+                <input type="text" id="empName" class="w-full p-2 border rounded bg-gray-100" readonly>
+                
+                <label class="block font-semibold">Average Score:</label>
+                <input type="text" id="avgScore" class="w-full p-2 border rounded bg-gray-100" readonly>
+
+                <label class="block font-semibold">Performance Grade:</label>
+                <input type="text" id="performanceGrade" class="w-full p-2 border rounded bg-gray-100 font-bold" readonly>
+            </form>
+        </div>
+    </div>
+</div>
+    <script>
+        document.addEventListener("DOMContentLoaded", async function () {
+            const user = JSON.parse(localStorage.getItem("loggedInEmp"));
+                    if (!user) {
+                        alert("User not logged in!");
+                        window.location.href = "loginPage.html"; 
+                        return;
+                    }
+
+                    document.getElementById("employeeName").textContent = user.name;
+                    document.getElementById("employeeId").textContent = `Employee ID: ${user.employeeId}`;
+            try {
+                // Fetch logged-in employee details
+                const empResponse = await fetch("/getLoggedInEmp");
+                const empData = await empResponse.json();
+
+                if (!empData.success || !empData.employee || !empData.employee.employeeId) {
+                    alert("Unauthorized access! Redirecting to login...");
+                    window.location.href = "login.html";
+                    return;
+                }
+
+                // Populate Employee Name
+                document.getElementById("empName").value = empData.employee.name;
+
+                // Fetch employee evaluations
+                const evalResponse = await fetch(`/get-evaluations/${empData.employee.employeeId}`);
+                const evalData = await evalResponse.json();
+
+                if (!evalData.success || !evalData.evaluations || evalData.evaluations.length === 0) {
+                    document.getElementById("avgScore").value = "No Evaluations Yet";
+                    document.getElementById("performanceGrade").value = "Not Graded";
+                    return;
+                }
+
+                // Get the latest evaluation
+                const latestEval = evalData.evaluations[0];
+
+                // Ensure `average_score` exists in the response
+                if (!latestEval || latestEval.average_score === undefined) {
+                    document.getElementById("avgScore").value = "No Evaluations Yet";
+                    document.getElementById("performanceGrade").value = "Not Graded";
+                    return;
+                }
+
+                const avgScore = parseFloat(latestEval.average_score);
+
+                // Populate form fields
+                document.getElementById("avgScore").value = avgScore.toFixed(1) + " / 10";
+                document.getElementById("performanceGrade").value = getGrade(avgScore);
+            } catch (error) {
+                console.error("Error fetching evaluation:", error);
+            }
+        });
+
+        // Function to determine grade
+        function getGrade(score) {
+            if (score < 4) return "Bad";
+            if (score >= 5 && score <= 7) return "Average";
+            return "Superb";
+        }
+
+
+
+    </script>
+
+</body>
+</html>
